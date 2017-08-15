@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace是指明Mybatis扫描的目录，mapper是我们的Dao层的映射目录 -->
+<mapper namespace="cn.rumofuture.nemo.dao.PageDao">
+
+    <resultMap id="pageResultMap" type="cn.rumofuture.nemo.domain.entity.Page">
+        <id column="id" property="id"/>
+        <result column="image" property="image"/>
+        <result column="number" property="number"/>
+        <result column="create_date" property="createDate"/>
+        <result column="update_date" property="updateDate"/>
+        <association column="book_id" property="book"
+                     select="cn.rumofuture.nemo.dao.BookDao.findBookById"/>
+    </resultMap>
+
+    <!-- 保存 -->
+    <insert id="savePage" parameterType="page" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO page(book_id, image, number)
+        VALUES(#{book.id}, #{image}, #{number})
+    </insert>
+
+    <!-- 更新 -->
+    <update id="updatePage" parameterType="page">
+        UPDATE page SET image = #{image} WHERE id = #{id}
+    </update>
+
+    <!-- 删除 -->
+    <update id="deletePage" parameterType="int">
+        DELETE FROM page where id = #{id}
+    </update>
+
+    <!-- pageId查询 -->
+    <select id="findPageById" parameterType="int" resultMap="pageResultMap">
+        SELECT * FROM page WHERE id = #{id}
+    </select>
+
+    <!-- bookId查询 -->
+    <select id="findPagesByBookId" parameterType="int" resultMap="pageResultMap">
+        SELECT * FROM page WHERE book_id = #{bookId}
+    </select>
+</mapper>

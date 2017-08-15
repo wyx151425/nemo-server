@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace是指明Mybatis扫描的目录，mapper是我们的Dao层的映射目录 -->
+<mapper namespace="cn.rumofuture.nemo.dao.UserDao">
+
+    <resultMap id="userResultMap" type="cn.rumofuture.nemo.domain.entity.User">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="mobile_phone_number" property="mobilePhoneNumber"/>
+        <result column="password" property="password"/>
+        <result column="sex" property="sex" typeHandler="cn.rumofuture.nemo.util.typehandler.SexTypeHandler"/>
+        <result column="book_number" property="bookNumber"/>
+        <result column="followed_number" property="followedNumber"/>
+        <result column="follower_number" property="followerNumber"/>
+        <result column="collected_number" property="collectedNumber"/>
+        <result column="create_date" property="createDate"/>
+        <result column="update_date" property="updateDate"/>
+    </resultMap>
+
+    <!--保存-->
+    <insert id="saveUser" parameterType="user" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user(name, mobile_phone_number, password, avatar, portrait, motto, email, location, occupation, introduction, sex, age, book_number, followed_number, follower_number, collected_number, birthday, create_date, update_date)
+        VALUES(#{name}, #{mobilePhoneNumber}, #{password}, #{avatar}, #{portrait}, #{motto}, #{email}, #{location}, #{occupation}, #{introduction}, #{sex, typeHandler=cn.rumofuture.nemo.util.typehandler.SexTypeHandler}, #{age}, #{bookNumber}, #{followedNumber}, #{followerNumber}, #{collectedNumber}, #{birthday}, #{createDate}, #{updateDate})
+    </insert>
+
+    <!--更新-->
+    <update id="updateUserAvatar" parameterType="user">
+        UPDATE user SET avatar = #{avatar} WHERE id = #{id}
+    </update>
+
+    <!--更新-->
+    <update id="updateUserPortrait" parameterType="user">
+        UPDATE user SET portrait = #{portrait} WHERE id = #{id}
+    </update>
+
+    <!--更新-->
+    <update id="updateUserPassword" parameterType="user">
+        UPDATE user SET password = #{password} WHERE id = #{id}
+    </update>
+
+    <!--更新-->
+    <update id="updateUserInformation" parameterType="user">
+        UPDATE user
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="motto != null">motto = #{motto},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="occupation != null">occupation = #{occupation},</if>
+            <if test="introduction != null">introduction = #{introduction},</if>
+            <if test="sex != null">sex = #{sex, typeHandler=cn.rumofuture.nemo.util.typehandler.SexTypeHandler},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="bookNumber != null">book_number = #{bookNumber},</if>
+            <if test="followedNumber != null">followed_number= #{followedNumber},</if>
+            <if test="followerNumber != null">follower_number= #{followerNumber},</if>
+            <if test="collectedNumber != null">collected_number = #{collectedNumber},</if>
+            <if test="birthday != null">birthday = #{birthday},</if>
+            <if test="updateDate != null">update_date = #{updateDate}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--查找-->
+    <select id="findUserById" parameterType="int" resultMap="userResultMap">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+
+    <!--查找-->
+    <select id="findUserByMobilePhoneNumber" parameterType="string" resultMap="userResultMap">
+        SELECT * FROM user WHERE mobile_phone_number = #{mobilePhoneNumber}
+    </select>
+</mapper>

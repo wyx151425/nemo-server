@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: org.mybatis:mybatis-typehandlers-jsr310:1.0.1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.mybatis/mybatis-typehandlers-jsr310/1.0.1/82bf69b93e4d2403c144041a1e67d4df9aa1a2a0/mybatis-typehandlers-jsr310-1.0.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.mybatis/mybatis-typehandlers-jsr310/1.0.1/c784bc254fdc773c5ef7f5c0bf84a1954310574/mybatis-typehandlers-jsr310-1.0.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
