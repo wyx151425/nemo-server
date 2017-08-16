@@ -4,11 +4,20 @@ package cn.rumofuture.nemo.domain.dto;
  * Created by WangZhenqi on 2017/8/11.
  */
 
-public class ResponseEntity {
+public class ResponseEntity<T> {
 
     private Integer code;
     private String message;
-    private Object data;
+    private T data;
+
+    public ResponseEntity(boolean success, String message, T data) {
+        if (success)
+            this.code = SUCCESS;
+        else
+            this.code = FAILED;
+        this.message = message;
+        this.data = data;
+    }
 
     public static final Integer SUCCESS = 1;
     public static final Integer FAILED = 0;
@@ -29,11 +38,11 @@ public class ResponseEntity {
         this.message = message;
     }
 
-    public Object getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(T data) {
         this.data = data;
     }
 }

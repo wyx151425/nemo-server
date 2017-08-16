@@ -2,10 +2,10 @@ package cn.rumofuture.nemo.util.injector;
 
 import cn.rumofuture.nemo.domain.dto.ResponseEntity;
 
-public class DataInjector {
+public class DataInject<T> {
 
-    public static ResponseEntity responseEntityInjector(boolean successOrNot, String message, Object data) {
-        ResponseEntity responseEntity = new ResponseEntity();
+    public ResponseEntity<T> responseEntity(boolean successOrNot, String message, T data) {
+        ResponseEntity<T> responseEntity = new ResponseEntity<>();
         if (successOrNot)
             responseEntity.setCode(ResponseEntity.SUCCESS);
         else

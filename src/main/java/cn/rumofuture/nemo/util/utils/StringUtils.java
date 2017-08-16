@@ -4,7 +4,7 @@ package cn.rumofuture.nemo.util.utils;
  * Created by WangZhenqi on 2017/8/14.
  */
 
-public class StringContracts {
+public class StringUtils {
 
     public static final String USER_LOG_IN_SUCCESS = "登录成功，欢迎您！";
     public static final String USER_LOG_IN_FAILED = "登录失败...";
