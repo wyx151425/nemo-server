@@ -1,9 +1,8 @@
 package cn.rumofuture.nemo.controller;
 
-import cn.rumofuture.nemo.domain.dto.ResponseEntity;
-import cn.rumofuture.nemo.domain.entity.User;
+import cn.rumofuture.nemo.model.domain.User;
+import cn.rumofuture.nemo.model.dto.ResponseEntity;
 import cn.rumofuture.nemo.service.UserService;
-import cn.rumofuture.nemo.util.injector.DataInject;
 import cn.rumofuture.nemo.util.utils.DataUtils;
 import cn.rumofuture.nemo.util.utils.FilePathUtils;
 import cn.rumofuture.nemo.util.utils.StringUtils;
@@ -64,20 +63,20 @@ public class UserController {
         // 如果此手机号为注册过，执行如下操作
         if (result) {
             // 完善用户信息
-            user.setAvatar("");
-            user.setPortrait("");
+            user.setAvatarUrl("");
+            user.setPortraitUrl("");
             user.setMotto("");
             user.setEmail("");
             user.setLocation("");
-            user.setOccupation("");
-            user.setIntroduction("");
-            user.setSex("男");
+            user.setProfession("");
+            user.setProfile("");
+            user.setGender("男");
             user.setAge(0);
-            user.setBookNumber(0);
-            user.setFollowedNumber(0);
-            user.setFollowerNumber(0);
-            user.setCollectedNumber(0);
-            user.setBirthday(LocalDate.now());
+            user.setBookTotal(0);
+            user.setFollowTotal(0);
+            user.setFollowerTotal(0);
+            user.setFavoriteTotal(0);
+            user.setBirthday(String.valueOf(LocalDate.now()));
             user.setCreateDate(LocalDateTime.now().withNano(0));
             user.setUpdateDate(LocalDateTime.now().withNano(0));
             // 将用户信息保存到数据库中
@@ -94,7 +93,7 @@ public class UserController {
         }
         // 如果此手机号已注册过，执行如下操作
         else
-            responseEntity = responseEntity = new ResponseEntity<>(
+            responseEntity = new ResponseEntity<>(
                     false, StringUtils.USER_ALREADY_EXISTS, null);
 
         return responseEntity;

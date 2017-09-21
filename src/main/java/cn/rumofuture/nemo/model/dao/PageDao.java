@@ -1,4 +1,4 @@
-package cn.rumofuture.nemo.dao;
+package cn.rumofuture.nemo.model.dao;
 
 import cn.rumofuture.nemo.domain.entity.Page;
 import org.apache.ibatis.annotations.Mapper;

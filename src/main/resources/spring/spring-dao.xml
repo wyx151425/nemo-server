@@ -6,6 +6,7 @@
       http://www.springframework.org/schema/beans/spring-beans.xsd
       http://www.springframework.org/schema/context
       http://www.springframework.org/schema/context/spring-context.xsd">
+
     <!-- 配置整合mybatis过程 -->
     <!-- 1.配置数据库相关参数properties的属性：${url} -->
     <!-- 使用数据库配置文件解耦 -->
@@ -78,7 +79,7 @@
         <!-- 注入sqlSessionFactory -->
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
         <!-- 给出需要扫描Dao接口包 -->
-        <property name="basePackage" value="cn.rumofuture.nemo.dao"/>
+        <property name="basePackage" value="cn.rumofuture.nemo.model.dao"/>
     </bean>
 
     <!-- 上面的druid的配置 -->

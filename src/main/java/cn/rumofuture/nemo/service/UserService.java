@@ -1,6 +1,6 @@
 package cn.rumofuture.nemo.service;
 
-import cn.rumofuture.nemo.dao.UserDao;
+import cn.rumofuture.nemo.model.dao.UserDao;
 import cn.rumofuture.nemo.domain.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package cn.rumofuture.nemo.domain.dto;
+package cn.rumofuture.nemo.model.dto;
 
 /**
  * Created by WangZhenqi on 2017/8/11.

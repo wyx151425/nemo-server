@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- namespace是指明Mybatis扫描的目录，mapper是我们的Dao层的映射目录 -->
-<mapper namespace="cn.rumofuture.nemo.dao.UserDao">
+<mapper namespace="cn.rumofuture.nemo.model.dao.UserDao">
 
     <resultMap id="userResultMap" type="cn.rumofuture.nemo.domain.entity.User">
         <id column="id" property="id"/>

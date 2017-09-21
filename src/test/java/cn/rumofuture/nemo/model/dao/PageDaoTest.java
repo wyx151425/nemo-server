@@ -1,4 +1,4 @@
-package cn.rumofuture.nemo.dao;
+package cn.rumofuture.nemo.model.dao;
 
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
