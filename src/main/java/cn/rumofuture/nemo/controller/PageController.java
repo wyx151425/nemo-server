@@ -1,6 +1,7 @@
 package cn.rumofuture.nemo.controller;
 
-import cn.rumofuture.nemo.domain.dto.ResponseEntity;
+import cn.rumofuture.nemo.model.domain.Page;
+import cn.rumofuture.nemo.model.dto.ResponsePage;
 import cn.rumofuture.nemo.service.BookService;
 import cn.rumofuture.nemo.service.PageService;
 import cn.rumofuture.nemo.util.utils.DataUtils;
@@ -29,8 +30,6 @@ public class PageController {
     @Autowired
     private PageService pageService;
 
-    private ResponseEntity responseEntity = null;
-
     /**
      * 漫画册分页上传方法，逻辑如下：
      * 1.
@@ -40,18 +39,13 @@ public class PageController {
      * @return 返回响应结果对象
      */
     @PostMapping(value = "/append")
-    public ResponseEntity bookCoverUpload(
+    public ResponsePage bookCoverUpload(
             @RequestParam(value = "bookId", required = true) Integer bookId,
             @RequestParam(value = "image", required = true) MultipartFile image
     ) {
-        responseEntity = new ResponseEntity();  // 创建返回对象
-
         // 检查客户端提交的数据
         if (DataUtils.isIdEmpty(bookId)) {
-            responseEntity.setCode(ResponseEntity.FAILED);
-            responseEntity.setMessage("文件上传失败");
-            responseEntity.setData(null);
-            return responseEntity;
+            return new ResponsePage(false, "文件上传失败", null);
         }
 
         // 如果文件不为空，则将文件保存到制定路径中
@@ -68,19 +62,14 @@ public class PageController {
             // 将上传文件保存到一个目标文件当中
             try {
                 image.transferTo(new File(path + fileName));
-                responseEntity.setCode(ResponseEntity.SUCCESS);
-                responseEntity.setMessage("文件上传成功");
-                responseEntity.setData(path + fileName);
+                Page page = new Page();
+                page.setImageUrl(path + fileName);
+                return new ResponsePage(true, "文件上传成功", page);
             } catch (IOException e) {
-                responseEntity.setCode(ResponseEntity.FAILED);
-                responseEntity.setMessage("文件保存失败");
-                responseEntity.setData(null);
+                return new ResponsePage(false, "文件保存失败", null);
             }
         } else {
-            responseEntity.setCode(ResponseEntity.FAILED);
-            responseEntity.setMessage("文件上传失败");
-            responseEntity.setData(null);
+            return new ResponsePage(false, "文件上传失败", null);
         }
-        return responseEntity;
     }
 }

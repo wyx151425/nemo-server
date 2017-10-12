@@ -1,14 +1,13 @@
 package cn.rumofuture.nemo.controller;
 
-import cn.rumofuture.nemo.domain.dto.ResponseEntity;
-import cn.rumofuture.nemo.domain.entity.Book;
-import cn.rumofuture.nemo.domain.entity.User;
+import cn.rumofuture.nemo.model.domain.Book;
+import cn.rumofuture.nemo.model.domain.User;
+import cn.rumofuture.nemo.model.dto.ResponseBook;
 import cn.rumofuture.nemo.service.BookService;
 import cn.rumofuture.nemo.service.UserService;
-import cn.rumofuture.nemo.util.injector.DataInject;
 import cn.rumofuture.nemo.util.utils.DataUtils;
 import cn.rumofuture.nemo.util.utils.FilePathUtils;
-import cn.rumofuture.nemo.util.utils.StringUtils;
+import cn.rumofuture.nemo.util.utils.PromptUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,35 +45,25 @@ public class BookController {
      * @param userId       漫画册所属用户id
      * @param name         漫画册名称
      * @param cover        漫画册封面文件对象
-     * @param category     漫画册分类
      * @param style        漫画册风格
      * @param introduction 漫画册简介
      * @return json对象
      */
     @PostMapping(value = "/create")
-    public ResponseEntity bookCreate(
+    public ResponseBook bookCreate(
             @RequestParam(value = "userId", required = true) Integer userId,
             @RequestParam(value = "name", required = true) String name,
             @RequestParam(value = "cover", required = true) MultipartFile cover,
-            @RequestParam(value = "category", required = true) String category,
             @RequestParam(value = "style", required = true) String style,
             @RequestParam(value = "introduction", required = true) String introduction
     ) {
-        ResponseEntity responseEntity = new ResponseEntity();  // 创建返回对象
-
         // 检查客户端提交的数据
         if (DataUtils.isIdEmpty(userId)) {
-            responseEntity.setCode(ResponseEntity.FAILED);
-            responseEntity.setMessage(StringUtils.DATA_TRANSMISSION_FAILED);
-            responseEntity.setData(null);
-            return responseEntity;
+            return new ResponseBook(false, PromptUtils.DATA_TRANSMISSION_FAILED, null);
         }
 
-        if (DataUtils.isStringDataEmpty(name, category, style, introduction)) {
-            responseEntity.setCode(ResponseEntity.FAILED);
-            responseEntity.setMessage(StringUtils.BOOK_INFORMATION_IMPROVE_REQUEST);
-            responseEntity.setData(null);
-            return responseEntity;
+        if (DataUtils.isStringDataEmpty(name, style, introduction)) {
+            return new ResponseBook(false, PromptUtils.BOOK_INFORMATION_IMPROVE_REQUEST, null);
         }
 
         if (!cover.isEmpty()) {
@@ -83,14 +72,13 @@ public class BookController {
             Book book = new Book();
             book.setName(name);
             book.setAuthor(targetUser);
-            book.setCover("");
-            book.setCategory(category);
+            book.setCoverUrl("");
             book.setStyle(style);
             book.setIntroduction(introduction);
-            book.setPageNumber(0);
-            book.setCollectorNumber(0);
-            book.setCreateDate(LocalDateTime.now().withNano(0));
-            book.setUpdateDate(LocalDateTime.now().withNano(0));
+            book.setPageTotal(0);
+            book.setFavorTotal(0);
+            book.setCreateTime(LocalDateTime.now().withNano(0));
+            book.setUpdateTime(LocalDateTime.now().withNano(0));
 
             int saveResult = bookService.saveBook(book);  // 保存漫画册对象
 
@@ -108,15 +96,13 @@ public class BookController {
                 try {
                     File coverFile = new File(coverPath + coverName);  // 创建用于保存的漫画册封面文件对象（File类型）
                     cover.transferTo(coverFile);  // 保存漫画册封面文件
-                    book.setCover(coverPath + coverName);  // 为漫画册设置封面
+                    book.setCoverUrl(coverPath + coverName);  // 为漫画册设置封面
 
                     int updateResult = bookService.updateBookInformation(book);  // 更新漫画册信息
 
                     // 漫画册信息更新成功则执行如下操作
                     if (1 == updateResult) {
-                        responseEntity.setCode(ResponseEntity.SUCCESS);
-                        responseEntity.setMessage(StringUtils.BOOK_CREATE_SUCCESS);
-                        responseEntity.setData(book);
+                        return new ResponseBook(true, PromptUtils.BOOK_CREATE_SUCCESS, book);
                     }
 
                     // 漫画册信息更新失败则执行如下操作
@@ -128,32 +114,22 @@ public class BookController {
                         coverFile.delete();
                         parent.delete();
                         grandParent.delete();
-                        responseEntity.setCode(ResponseEntity.FAILED);
-                        responseEntity.setMessage(StringUtils.BOOK_CREATE_FAILED);
-                        responseEntity.setData(null);
+                        return new ResponseBook(false, PromptUtils.BOOK_CREATE_FAILED, null);
                     }
                 }
-
                 // 如果漫画册封面文件保存失败则执行如下操作
                 catch (IOException e) {
                     bookService.deleteBook(book.getId());
-                    responseEntity.setCode(ResponseEntity.FAILED);
-                    responseEntity.setMessage(StringUtils.BOOK_CREATE_FAILED);
-                    responseEntity.setData(null);
+                    return new ResponseBook(false, PromptUtils.BOOK_CREATE_FAILED, null);
                 }
             }
-
             // 如果漫画册保存失败则执行如下操作
             else {
-                responseEntity = DataInject.responseEntity(
-                        false, StringUtils.BOOK_CREATE_FAILED, null);
+                return new ResponseBook(false, PromptUtils.BOOK_CREATE_FAILED, null);
             }
         } else {
-            responseEntity = DataInject.responseEntity(
-                    false, StringUtils.DATA_TRANSMISSION_FAILED, null);
+            return new ResponseBook(false, PromptUtils.DATA_TRANSMISSION_FAILED, null);
         }
-
-        return responseEntity;
     }
 
     /**
@@ -166,15 +142,13 @@ public class BookController {
      * @return
      */
     @DeleteMapping(value = "/delete")
-    public ResponseEntity bookDelete(
+    public ResponseBook bookDelete(
             @RequestParam("id") Integer id
     ) {
-        ResponseEntity responseEntity;
-
         // 检查前端提交的漫画册id是否为空
-        if (DataUtils.isIdEmpty(id))
-            return DataInject.responseEntity(
-                    false, StringUtils.DATA_TRANSMISSION_FAILED, null);
+        if (DataUtils.isIdEmpty(id)) {
+            return new ResponseBook(false, PromptUtils.DATA_TRANSMISSION_FAILED, null);
+        }
 
         // 从数据库中获取具有完整数据的漫画册对象
         Book targetBook = bookService.findBookById(id);
@@ -185,26 +159,23 @@ public class BookController {
             int bookDeleteResult = bookService.deleteBook(id);
             if (1 == bookDeleteResult) {
                 // 如果漫画册删除成功，则删除漫画册封面文件和上级目录
-                File bookCover = new File(targetBook.getCover());
+                File bookCover = new File(targetBook.getCoverUrl());
                 File grandParent = bookCover.getParentFile().getParentFile();
                 File parent = bookCover.getParentFile();
                 bookCover.delete();
                 parent.delete();
                 grandParent.delete();
-                responseEntity = DataInject.responseEntity(
-                        true, StringUtils.BOOK_DELETE_SUCCESS, null);
+                return new ResponseBook(true, PromptUtils.BOOK_DELETE_SUCCESS, null);
             }
             // 如果漫画册删除失败，则返回删除失败提示消息
-            else
-                responseEntity = DataInject.responseEntity(
-                        false, StringUtils.BOOK_DELETE_FAILED, null);
+            else {
+                return new ResponseBook(false, PromptUtils.BOOK_DELETE_FAILED, null);
+            }
         }
         // 如果漫画册获取失败，则不执行操作，直接返回错误信息
-        else
-            responseEntity = DataInject.responseEntity(
-                    false, StringUtils.BOOK_DELETE_FAILED, null);
-
-        return responseEntity;
+        else {
+            return new ResponseBook(false, PromptUtils.BOOK_DELETE_FAILED, null);
+        }
     }
 
     /**
@@ -216,50 +187,41 @@ public class BookController {
      *
      * @param id           漫画册id
      * @param name         漫画册名称
-     * @param category     漫画册分类
      * @param style        漫画册风格
      * @param introduction 漫画册简介
      * @return
      */
-    @PutMapping(value = "/information/update")
-    public ResponseEntity bookUpdate(
+    @PutMapping(value = "/info/update")
+    public ResponseBook bookUpdate(
             @RequestParam(value = "id", required = true) Integer id,
             @RequestParam(value = "name", required = true) String name,
-            @RequestParam(value = "category", required = true) String category,
             @RequestParam(value = "style", required = true) String style,
             @RequestParam(value = "introduction", required = true) String introduction
     ) {
-        ResponseEntity responseEntity;
-
         // 检查漫画册id是否为0或null
-        if (DataUtils.isIdEmpty(id))
-            return DataInject.responseEntity(
-                    false, StringUtils.DATA_TRANSMISSION_FAILED, null);
-
+        if (DataUtils.isIdEmpty(id)) {
+            return new ResponseBook(false, PromptUtils.DATA_TRANSMISSION_FAILED, null);
+        }
 
         // 检查前端提交的漫画册名称，分类，风格，简介是否为null
-        if (DataUtils.isDataNull(name, category, style, introduction))
-            return responseEntity = DataInject.responseEntity(
-                    false, StringUtils.DATA_TRANSMISSION_FAILED, null);
+        if (DataUtils.isDataNull(name, style, introduction)) {
+            return new ResponseBook(false, PromptUtils.DATA_TRANSMISSION_FAILED, null);
+        }
 
         // 从数据库中获取具有完整信息的漫画册对象
         Book targetBook = bookService.findBookById(id);
         if (null != targetBook) {
             targetBook.setName(name);
-            targetBook.setCategory(category);
             targetBook.setStyle(style);
             targetBook.setIntroduction(introduction);
             int result = bookService.updateBookInformation(targetBook);
-            if (1 == result)
-                responseEntity = DataInject.responseEntity(
-                        true, StringUtils.BOOK_INFORMATION_UPDATE_SUCCESS, targetBook);
-            else
-                responseEntity = DataInject.responseEntity(
-                        false, StringUtils.BOOK_INFORMATION_UPDATE_FAILED, null);
-        } else
-            responseEntity = DataInject.responseEntity(
-                    false, StringUtils.BOOK_INFORMATION_UPDATE_FAILED, null);
-
-        return responseEntity;
+            if (1 == result) {
+                return new ResponseBook(true, PromptUtils.BOOK_INFORMATION_UPDATE_SUCCESS, targetBook);
+            } else {
+                return new ResponseBook(false, PromptUtils.BOOK_INFORMATION_UPDATE_FAILED, null);
+            }
+        } else {
+            return new ResponseBook(false, PromptUtils.BOOK_INFORMATION_UPDATE_FAILED, null);
+        }
     }
 }

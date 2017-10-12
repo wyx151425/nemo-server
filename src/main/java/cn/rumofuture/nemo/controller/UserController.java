@@ -1,11 +1,11 @@
 package cn.rumofuture.nemo.controller;
 
 import cn.rumofuture.nemo.model.domain.User;
-import cn.rumofuture.nemo.model.dto.ResponseEntity;
+import cn.rumofuture.nemo.model.dto.ResponseUser;
 import cn.rumofuture.nemo.service.UserService;
 import cn.rumofuture.nemo.util.utils.DataUtils;
 import cn.rumofuture.nemo.util.utils.FilePathUtils;
-import cn.rumofuture.nemo.util.utils.StringUtils;
+import cn.rumofuture.nemo.util.utils.PromptUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,22 +40,20 @@ public class UserController {
      */
     @PostMapping(value = "/signup")
     public Object userSignUp(@RequestBody User user) {
-        ResponseEntity<User> responseEntity;
-
         // 检查前端数据是否封装成功
-        if (DataUtils.isDataEmpty(user))
-            return new ResponseEntity<User>(
-                    false, StringUtils.DATA_TRANSMISSION_FAILED, null);
+        if (DataUtils.isDataEmpty(user)) {
+            return new ResponseUser(false, PromptUtils.DATA_TRANSMISSION_FAILED, null);
+        }
 
         // 检查姓名，手机号和密码是否不为空
-        if (DataUtils.isStringDataEmpty(user.getName(), user.getMobilePhoneNumber(), user.getPassword()))
-            return new ResponseEntity<User>(
-                    false, StringUtils.USER_SIGN_UP_INFORMATION_IMPROVE_REQUEST, null);
+        if (DataUtils.isStringDataEmpty(user.getName(), user.getMobilePhoneNumber(), user.getPassword())) {
+            return new ResponseUser(false, PromptUtils.USER_SIGN_UP_INFORMATION_IMPROVE_REQUEST, null);
+        }
 
         // 检查手机号格式是否正确
-        if (!DataUtils.isMobilePhoneNumber(user.getMobilePhoneNumber()))
-            return new ResponseEntity<User>(
-                    false, StringUtils.MOBILE_PHONE_NUMBER_FORMAT_ERROR, null);
+        if (!DataUtils.isMobilePhoneNumber(user.getMobilePhoneNumber())) {
+            return new ResponseUser(false, PromptUtils.MOBILE_PHONE_NUMBER_FORMAT_ERROR, null);
+        }
 
         // 检查此手机号是否已经注册过
         boolean result = userService.canUserSignUp(user.getMobilePhoneNumber());
@@ -77,26 +75,23 @@ public class UserController {
             user.setFollowerTotal(0);
             user.setFavoriteTotal(0);
             user.setBirthday(String.valueOf(LocalDate.now()));
-            user.setCreateDate(LocalDateTime.now().withNano(0));
-            user.setUpdateDate(LocalDateTime.now().withNano(0));
+            user.setCreateTime(LocalDateTime.now().withNano(0));
+            user.setUpdateTime(LocalDateTime.now().withNano(0));
             // 将用户信息保存到数据库中
             int saveResult = userService.userSignUp(user);
             // 如果数据库操作影响行数为1，则用户信息保存成功，即注册成功
             if (1 == saveResult) {
-                user.setCreateDate(null);
-                user.setUpdateDate(null);
-                responseEntity = new ResponseEntity<>(
-                        true, StringUtils.USER_SIGN_UP_SUCCESS, user);
-            } else
-                responseEntity = new ResponseEntity<>(
-                        false, StringUtils.USER_SIGN_UP_FAILED, null);
+                user.setCreateTime(null);
+                user.setUpdateTime(null);
+                return new ResponseUser(true, PromptUtils.USER_SIGN_UP_SUCCESS, user);
+            } else {
+                return new ResponseUser(false, PromptUtils.USER_SIGN_UP_FAILED, null);
+            }
         }
         // 如果此手机号已注册过，执行如下操作
-        else
-            responseEntity = new ResponseEntity<>(
-                    false, StringUtils.USER_ALREADY_EXISTS, null);
-
-        return responseEntity;
+        else {
+            return new ResponseUser(false, PromptUtils.USER_ALREADY_EXISTS, null);
+        }
     }
 
     /**
@@ -110,50 +105,38 @@ public class UserController {
      * @return
      */
     @PostMapping(value = "/login")
-    public ResponseEntity userLogIn(@RequestBody User user) {
-        ResponseEntity<User> responseEntity;
-
+    public ResponseUser userLogIn(@RequestBody User user) {
         // 检查前端数据是否封装成功
         if (DataUtils.isDataEmpty(user))
-            return new ResponseEntity<User>(
-                    false, StringUtils.DATA_TRANSMISSION_FAILED, null);
+            return new ResponseUser(false, PromptUtils.DATA_TRANSMISSION_FAILED, null);
 
         // 检查手机号和密码是否不为空
         if (DataUtils.isStringDataEmpty(user.getMobilePhoneNumber(), user.getPassword()))
-            return new ResponseEntity<User>(
-                    false, StringUtils.USER_LOG_IN_INFORMATION_IMPROVE_REQUEST, null);
+            return new ResponseUser(false, PromptUtils.USER_LOG_IN_INFORMATION_IMPROVE_REQUEST, null);
 
         // 检查手机号格式是否正确
         if (!DataUtils.isMobilePhoneNumber(user.getMobilePhoneNumber()))
-            return new ResponseEntity<User>(
-                    false, StringUtils.MOBILE_PHONE_NUMBER_FORMAT_ERROR, null);
+            return new ResponseUser(false, PromptUtils.MOBILE_PHONE_NUMBER_FORMAT_ERROR, null);
 
         // 根据手机号访问数据库，并返回查询结果
         User resultUser = userService.userLogIn(user.getMobilePhoneNumber());
 
         // 如果查询结果为空，则此手机号并未注册
         if (null == resultUser)
-            return new ResponseEntity<User>(
-                    false, StringUtils.USER_DOES_NOT_EXIST, null);
+            return new ResponseUser(false, PromptUtils.USER_DOES_NOT_EXIST, null);
         else {
             // 如果密码匹配成功，则登录成功
             if (user.getPassword().equals(resultUser.getPassword())) {
                 // 创建时间和更新时间前端不可见
-                resultUser.setCreateDate(null);
-                resultUser.setUpdateDate(null);
-                responseEntity.setCode(ResponseEntity.SUCCESS);
-                responseEntity.setMessage(StringUtils.USER_LOG_IN_SUCCESS);
-                responseEntity.setData(resultUser);
+                resultUser.setCreateTime(null);
+                resultUser.setUpdateTime(null);
+                return new ResponseUser(true, PromptUtils.USER_LOG_IN_SUCCESS, resultUser);
             }
             // 如果密码匹配失败，则登录失败
             else {
-                responseEntity.setCode(ResponseEntity.FAILED);
-                responseEntity.setMessage(StringUtils.PASSWORD_ERROR);
-                responseEntity.setData(null);
+                return new ResponseUser(false, PromptUtils.PASSWORD_ERROR, null);
             }
         }
-
-        return responseEntity;
     }
 
     /**
@@ -168,12 +151,12 @@ public class UserController {
      * @return
      */
     @PutMapping(value = "/password/update")
-    public ResponseEntity userPasswordUpdate(
+    public ResponseUser userPasswordUpdate(
             @RequestParam("id") Integer id,
             @RequestParam("oldPassword") String oldPassword,
             @RequestParam("newPassword") String newPassword
     ) {
-        ResponseEntity<User> responseEntity;
+        ResponseUser responseUser;
 
         // 根据前端提交的用户id获取具有完整信息的用户对象
         User targetUser = userService.findUserById(id);
@@ -187,26 +170,22 @@ public class UserController {
                 // 更新成功，执行如下操作
                 if (1 == result) {
                     // 创建时间和更新时间前端不可见
-                    targetUser.setCreateDate(null);
-                    targetUser.setUpdateDate(null);
-                    responseEntity = new ResponseEntity<>(
-                            true, StringUtils.USER_PASSWORD_UPDATE_SUCCESS, targetUser);
+                    targetUser.setCreateTime(null);
+                    targetUser.setUpdateTime(null);
+                    responseUser = new ResponseUser(true, PromptUtils.USER_PASSWORD_UPDATE_SUCCESS, targetUser);
                 } else
-                    responseEntity = new ResponseEntity<>(
-                            false, StringUtils.USER_PASSWORD_UPDATE_FAILED, null);
+                    responseUser = new ResponseUser(false, PromptUtils.USER_PASSWORD_UPDATE_FAILED, null);
             }
             // 原密码输入错误，则进行如下操作
             // * 前端应执行校验逻辑率先校验原密码是否正确，如果此操作执行，则说明前端界面被恶意修改
             else
-                responseEntity = new ResponseEntity<>(
-                        false, StringUtils.OLD_PASSWORD_ERROR, null);
+                responseUser = new ResponseUser(false, PromptUtils.OLD_PASSWORD_ERROR, null);
         }
         // 因为没有获取数据库中的用户信息，所以无法执行校验，修改密码过程终止
         else
-            responseEntity = new ResponseEntity<>(
-                    false, StringUtils.DATA_TRANSMISSION_FAILED, null);
+            responseUser = new ResponseUser(false, PromptUtils.DATA_TRANSMISSION_FAILED, null);
 
-        return responseEntity;
+        return responseUser;
     }
 
     /**
@@ -221,25 +200,24 @@ public class UserController {
      * @return responseEntity
      */
     @PutMapping(value = "/information/update")
-    public ResponseEntity userInformationUpdate(@RequestBody User user,
-        @RequestParam("name") String name,
-        @RequestParam("motto") String motto,
-        @RequestParam("location") String location,
+    public ResponseUser userInformationUpdate(
+            @RequestBody User user,
+            @RequestParam("name") String name,
+            @RequestParam("motto") String motto,
+            @RequestParam("location") String location
     ) {
-        ResponseEntity<User> responseEntity;
+        ResponseUser responseUser;
         // 检查对象id是否为空
         if (DataUtils.isIdEmpty(user.getId()))
-            return new ResponseEntity<User>(
-                    false, StringUtils.DATA_TRANSMISSION_FAILED, null);
+            return new ResponseUser(false, PromptUtils.DATA_TRANSMISSION_FAILED, null);
 
         // 检查数据是否为null，需要检查的数据有：姓名，座右铭，位置，职业，简介，性别，年龄，生日
-        if (DataUtils.isDataNull(user.getName(), user.getMotto(), user.getLocation(), user.getOccupation(),
-                user.getIntroduction(), user.getSex(), user.getAge(), user.getBirthday()))
-            return new ResponseEntity<User>(
-                    false, StringUtils.DATA_TRANSMISSION_FAILED, null);
+        if (DataUtils.isDataNull(user.getName(), user.getMotto(), user.getLocation(), user.getProfession(),
+                user.getProfile(), user.getGender(), user.getAge(), user.getBirthday()))
+            return new ResponseUser(false, PromptUtils.DATA_TRANSMISSION_FAILED, null);
 
         // 设置更新时间为当前时间
-        user.setUpdateDate(LocalDateTime.now().withNano(0));
+        user.setUpdateTime(LocalDateTime.now().withNano(0));
         // 更新用户信息并返回数据库影响的行数
         int result = userService.updateUserInformation(user);
 
@@ -249,18 +227,13 @@ public class UserController {
             User targetUser = userService.findUserById(user.getId());
             if (targetUser != null) {
                 // 创建时间和更新时间前端不可见
-                targetUser.setCreateDate(null);
-                targetUser.setUpdateDate(null);
-                responseEntity = new ResponseEntity<>(
-                        true, StringUtils.USER_INFORMATION_UPDATE_SUCCESS, targetUser);
+                targetUser.setCreateTime(null);
+                targetUser.setUpdateTime(null);
+                return new ResponseUser(true, PromptUtils.USER_INFORMATION_UPDATE_SUCCESS, targetUser);
             }
         }
         // 如果数据更新失败，则执行如下操作
-        else
-            responseEntity = new ResponseEntity<>(
-                    true, StringUtils.USER_INFORMATION_UPDATE_FAILED, null);
-
-        return responseEntity;
+        return new ResponseUser(true, PromptUtils.USER_INFORMATION_UPDATE_FAILED, null);
     }
 
     /**
@@ -275,12 +248,10 @@ public class UserController {
      * @return
      */
     @PostMapping(value = "/avatar/upload")
-    public ResponseEntity userAvatarUpload(
+    public ResponseUser userAvatarUpload(
             @RequestParam("id") Integer userId,
             @RequestParam("avatar") MultipartFile avatarMultipartFile
     ) {
-        ResponseEntity<User> responseEntity = new ResponseEntity<>();
-
         // 检查接受前端文件的对象和id是否为空
         if (!avatarMultipartFile.isEmpty() && !DataUtils.isIdEmpty(userId)) {
             String avatarSavePath = FilePathUtils.getUserAvatarPath(userId);
@@ -289,10 +260,7 @@ public class UserController {
             // 根据文件名的后缀检查文件是否为图片文件
             // ***** 此验证过程并不严谨 *****
             if (!DataUtils.isImage(avatarFileName)) {
-                responseEntity.setCode(ResponseEntity.FAILED);
-                responseEntity.setMessage(StringUtils.FILE_FORMAT_ERROR);
-                responseEntity.setData(null);
-                return responseEntity;
+                return new ResponseUser(false, PromptUtils.FILE_FORMAT_ERROR, null);
             }
 
             // 根据保存路径创建目录文件对象，检查保存文件的目录是否已经创建
@@ -303,23 +271,15 @@ public class UserController {
             try {
                 // 将文件保存到指定路径下，如果保存过程中产生异常，则说明保存失败
                 avatarMultipartFile.transferTo(new File(avatarSavePath + avatarFileName));
-                responseEntity.setCode(ResponseEntity.FAILED);
-                responseEntity.setMessage(StringUtils.FILE_UPLOAD_SUCCESS);
-                responseEntity.setData(null);
+                return new ResponseUser(false, PromptUtils.FILE_UPLOAD_SUCCESS, null);
             } catch (IOException e) {
-                responseEntity.setCode(ResponseEntity.FAILED);
-                responseEntity.setMessage(StringUtils.FILE_UPLOAD_FAILED);
-                responseEntity.setData(null);
+                return new ResponseUser(false, PromptUtils.FILE_UPLOAD_FAILED, null);
             }
         }
         // 如果MultipartFile或id为空，则文件上传失败
         else {
-            responseEntity.setCode(ResponseEntity.FAILED);
-            responseEntity.setMessage(StringUtils.FILE_UPLOAD_FAILED);
-            responseEntity.setData(null);
+            return new ResponseUser(false, PromptUtils.FILE_UPLOAD_FAILED, null);
         }
-
-        return responseEntity;
     }
 
     /**
@@ -334,12 +294,10 @@ public class UserController {
      * @return
      */
     @PostMapping(value = "/portrait/upload")
-    public ResponseEntity userPortraitUpload(
+    public ResponseUser userPortraitUpload(
             @RequestParam("id") Integer userId,
             @RequestParam("portrait") MultipartFile portraitMultipartFile
     ) {
-        ResponseEntity<User> responseEntity = new ResponseEntity();
-
         // 检查接受前端文件的对象和id是否为空
         if (!portraitMultipartFile.isEmpty() && !DataUtils.isIdEmpty(userId)) {
             String portraitSavePath = FilePathUtils.getUserPortraitPath(userId);
@@ -348,10 +306,7 @@ public class UserController {
             // 根据文件名的后缀检查文件是否为图片文件
             // ***** 此验证过程并不严谨 *****
             if (!DataUtils.isImage(portraitFileName)) {
-                responseEntity.setCode(ResponseEntity.FAILED);
-                responseEntity.setMessage(StringUtils.FILE_FORMAT_ERROR);
-                responseEntity.setData(null);
-                return responseEntity;
+                return new ResponseUser(false, PromptUtils.FILE_FORMAT_ERROR, null);
             }
 
             // 根据保存路径创建目录文件对象，检查保存文件的目录是否已经创建
@@ -362,21 +317,14 @@ public class UserController {
             try {
                 // 将文件保存到指定路径下，如果保存过程中产生异常，则说明保存失败
                 portraitMultipartFile.transferTo(new File(portraitSavePath + portraitFileName));
-                responseEntity.setCode(ResponseEntity.FAILED);
-                responseEntity.setMessage(StringUtils.FILE_UPLOAD_SUCCESS);
-                responseEntity.setData(null);
+                return new ResponseUser(false, PromptUtils.FILE_UPLOAD_SUCCESS, null);
             } catch (IOException e) {
-                responseEntity.setCode(ResponseEntity.FAILED);
-                responseEntity.setMessage(StringUtils.FILE_UPLOAD_FAILED);
-                responseEntity.setData(null);
+                return new ResponseUser(false, PromptUtils.FILE_UPLOAD_FAILED, null);
             }
         }
         // 如果MultipartFile或id为空，则文件上传失败
         else {
-            responseEntity.setCode(ResponseEntity.FAILED);
-            responseEntity.setMessage(StringUtils.FILE_UPLOAD_FAILED);
-            responseEntity.setData(null);
+            return new ResponseUser(false, PromptUtils.FILE_UPLOAD_FAILED, null);
         }
-        return responseEntity;
     }
 }

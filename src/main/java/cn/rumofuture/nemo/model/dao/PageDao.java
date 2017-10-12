@@ -1,6 +1,6 @@
 package cn.rumofuture.nemo.model.dao;
 
-import cn.rumofuture.nemo.domain.entity.Page;
+import cn.rumofuture.nemo.model.domain.Page;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -15,5 +15,5 @@ public interface PageDao {
     int updatePage(Page page);
     int deletePage(Integer id);
     Page findPageById(Integer id);
-    List<Page> findPagesByBookId(Integer bookId);
+    List<Page> findPageListByBookId(Integer bookId);
 }

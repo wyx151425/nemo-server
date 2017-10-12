@@ -1,7 +1,7 @@
 package cn.rumofuture.nemo.service;
 
-import cn.rumofuture.nemo.domain.entity.Book;
 import cn.rumofuture.nemo.model.dao.BookDao;
+import cn.rumofuture.nemo.model.domain.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +25,7 @@ public class BookService {
     public int updateBookInformation(Book book) {
         int result;
         try {
-            result = bookDao.updateBookInformation(book);
+            result = bookDao.updateBookInfo(book);
         } catch (Exception e) {
             result = 0;
         }

@@ -1,6 +1,6 @@
 package cn.rumofuture.nemo.model.dao;
 
-import cn.rumofuture.nemo.domain.entity.User;
+import cn.rumofuture.nemo.model.domain.User;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -13,7 +13,7 @@ public interface UserDao {
     int updateUserAvatar(User user);
     int updateUserPortrait(User user);
     int updateUserPassword(User user);
-    int updateUserInformation(User user);
+    int updateUserInfo(User user);
     User findUserById(Integer id);
     User findUserByMobilePhoneNumber(String mobilePhoneNumber);
 }

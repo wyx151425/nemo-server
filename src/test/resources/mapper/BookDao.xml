@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace是指明Mybatis扫描的目录，mapper是我们的Dao层的映射目录 -->
+<mapper namespace="cn.rumofuture.nemo.model.dao.BookDao">
+
+    <resultMap id="bookResultMap" type="cn.rumofuture.nemo.domain.entity.Book">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="cover" property="cover"/>
+        <result column="category" property="category"/>
+        <result column="style" property="style"/>
+        <result column="introduction" property="introduction"/>
+        <result column="page_number" property="pageNumber"/>
+        <result column="collector_number" property="collectorNumber"/>
+        <result column="create_date" property="createDate"/>
+        <result column="update_date" property="updateDate"/>
+        <association column="author_id" property="author"
+                     select="cn.rumofuture.nemo.model.dao.UserDao.findUserById"/>
+    </resultMap>
+
+    <!-- 保存 -->
+    <insert id="saveBook" parameterType="book" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO book(name, author_id, cover, category, style, introduction, page_number, collector_number, create_date, update_date)
+        VALUES(#{name}, #{author.id}, #{cover}, #{category}, #{style}, #{introduction}, #{pageNumber}, #{collectorNumber}, #{createDate}, #{updateDate})
+    </insert>
+
+    <!-- 更新 -->
+    <update id="updateBookCover" parameterType="book">
+        UPDATE book SET cover = #{cover} WHERE id = #{id}
+    </update>
+
+    <!-- 更新 -->
+    <update id="updateBookInformation" parameterType="book">
+        UPDATE book SET name = #{name}, category = #{category}, style = #{style},
+        introduction = #{introduction}, update_date = #{updateDate} WHERE id = #{id}
+    </update>
+
+    <!-- 删除 -->
+    <delete id="deleteBook" parameterType="int">
+        DELETE FROM book WHERE id = #{id}
+    </delete>
+
+    <!-- bookId查找 -->
+    <select id="findBookById" parameterType="int" resultMap="bookResultMap">
+        SELECT * FROM book WHERE id = #{id}
+    </select>
+
+    <!-- userId查找 -->
+    <select id="findBooksByAuthorId" parameterType="int" resultMap="bookResultMap">
+        SELECT * FROM book WHERE author_id = #{authorId}
+    </select>
+</mapper>
